@@ -1,0 +1,21 @@
+services:
+  github-mcp-server:
+    image: ghcr.io/modelcontextprotocol/servers/github:latest
+    container_name: github-mcp-server
+    environment:
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
+    stdin_open: true # Keep stdin open for interaction
+    tty: true # Allocate a pseudo-TTY
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: codeamigos-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+volumes:
+  mongo-data:
