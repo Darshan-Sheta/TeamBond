@@ -11,17 +11,12 @@ import java.util.Map;
 @Configuration
 public class AppConfig {
 
-    private static final Dotenv dotenv = Dotenv.configure()
-            .ignoreIfMissing()
-            .systemProperties()
-            .load();
-
     @Bean
     public Cloudinary getCloudinary() {
         Map config = new HashMap();
-        config.put("cloud_name", dotenv.get("CLOUD_NAME"));
-        config.put("api_key", dotenv.get("API_KEY"));
-        config.put("api_secret", dotenv.get("API_SECRET"));
+        config.put("cloud_name", LoadEnvConfig.get("CLOUD_NAME"));
+        config.put("api_key", LoadEnvConfig.get("API_KEY"));
+        config.put("api_secret", LoadEnvConfig.get("API_SECRET"));
         return new Cloudinary(config);
     }
 }

@@ -104,7 +104,7 @@ const Chatbot = () => {
         user_id: "default_user"
       };
       console.log("before api hit ")
-      const response = await fetch("http://localhost:8080/api/chatbot/test", {
+      const response = await fetch("https://teambond-kjan.onrender.com/api/chatbot/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -169,8 +169,8 @@ const Chatbot = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`p-3 rounded-2xl max-w-[85%] relative shadow-md ${msg.sender === "user"
-                    ? "bg-gray-700/80 text-white self-end ml-auto backdrop-blur-sm"
-                    : "bg-gradient-to-br from-purple-200/90 via-purple-300/90 to-fuchsia-200/90 text-gray-900 self-start"
+                  ? "bg-gray-700/80 text-white self-end ml-auto backdrop-blur-sm"
+                  : "bg-gradient-to-br from-purple-200/90 via-purple-300/90 to-fuchsia-200/90 text-gray-900 self-start"
                   }`}
               >
                 <div

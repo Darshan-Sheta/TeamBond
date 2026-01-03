@@ -33,42 +33,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import jakarta.servlet.http.HttpServletResponse;  // For HttpServletResponse parameter
-import jakarta.servlet.http.Cookie;                   // For creating and manipulating cookies
-import org.springframework.http.ResponseEntity;     // For ResponseEntity return type
-import org.springframework.web.bind.annotation.PostMapping;  // For @PostMapping annotation
-import org.springframework.web.bind.annotation.RequestBody;  // For @RequestBody annotation
-
+import jakarta.servlet.http.HttpServletResponse; // For HttpServletResponse parameter
+import jakarta.servlet.http.Cookie; // For creating and manipulating cookies
+import org.springframework.http.ResponseEntity; // For ResponseEntity return type
+import org.springframework.web.bind.annotation.PostMapping; // For @PostMapping annotation
+import org.springframework.web.bind.annotation.RequestBody; // For @RequestBody annotation
 
 // Also import your User class and jwtUtil as per your project structure
-
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-    private static Dotenv dotenv;
     private static final String SECRET_KEY;
-    
+
     static {
-        try {
-            java.io.File envFile = new java.io.File(".env");
-            if (envFile.exists()) {
-                dotenv = Dotenv.load();
-            } else {
-                dotenv = Dotenv.configure().ignoreIfMissing().load();
-            }
-        } catch (Exception e) {
-            dotenv = Dotenv.configure().ignoreIfMissing().load();
-        }
-        
-        String key = dotenv.get("JWT_SECRET_KEY", null);
-        if (key == null) {
-            key = System.getProperty("JWT_SECRET_KEY");
-            if (key == null) {
-                key = System.getenv("JWT_SECRET_KEY");
-            }
-        }
+        String key = com.spring.codeamigosbackend.config.LoadEnvConfig.get("JWT_SECRET_KEY");
         SECRET_KEY = key != null ? key : "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOP";
     }
     private final UserService userService;
@@ -106,21 +86,20 @@ public class UserController {
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        try{
+        try {
             Claims claims = jwtUtil.validateToken(token);
 
-            System.out.println(claims.get("username",String.class));
-            String id = claims.get("id",String.class);
+            System.out.println(claims.get("username", String.class));
+            String id = claims.get("id", String.class);
             String email = claims.get("email", String.class);
             String username = claims.get("username", String.class);
             String status = claims.get("status", String.class);
 
             Map<String, String> user = Map.of(
-                    "id",id,
+                    "id", id,
                     "email", email,
                     "username", username,
-                    "status", status
-            );
+                    "status", status);
 
             return ResponseEntity.ok(user);
         } catch (Exception e) {
@@ -146,7 +125,7 @@ public class UserController {
                 u.setLeetcodeUsername(user.getLeetcodeUsername());
                 u.setCodechefUsername(user.getCodechefUsername());
                 // Save the public key from request
-//                System.out.println(user.getRsaPublicKey());
+                // System.out.println(user.getRsaPublicKey());
                 String encryptPublickey = EncryptionUtil.encrypt(user.getRsaPublicKey(), SECRET_KEY);
                 u.setRsaPublicKey(encryptPublickey);
                 savedUser = userRepository.save(u);
@@ -159,18 +138,17 @@ public class UserController {
                     savedUser.getId(),
                     savedUser.getUsername(),
                     savedUser.getEmail(),
-                    savedUser.getStatus()
-            );
+                    savedUser.getStatus());
             // Log JWT token to console
             System.out.println("Generated JWT Token: " + token);
             // Set JWT token as HttpOnly, Secure cookie with SameSite=Strict
             Cookie cookie = new Cookie("jwtToken", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);  // only if HTTPS
+            cookie.setSecure(true); // only if HTTPS
             cookie.setPath("/");
             cookie.setMaxAge(86400);
             response.addCookie(cookie);
-            System.out.println("Hello"+response.getHeader("Set-Cookie"));
+            System.out.println("Hello" + response.getHeader("Set-Cookie"));
             // Return user info (without token in body)
             GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
             githubScoreRequest.setUsername(user.getUsername());
@@ -178,7 +156,7 @@ public class UserController {
             // Decrypt token when needed
             String decryptedToken = EncryptionUtil.decrypt(u.getGithubAccessToken(), SECRET_KEY);
             githubScoreRequest.setAccessToken(decryptedToken);
-            System.out.println("decrepted github access token"+decryptedToken);
+            System.out.println("decrepted github access token" + decryptedToken);
             rabbitMqProducer.sendUserToQueue(githubScoreRequest);
             return ResponseEntity.ok(savedUser);
 
@@ -188,19 +166,18 @@ public class UserController {
         }
     }
 
-
     // Login endpoint .... No longer required
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User loginRequest) {
         try {
             User authenticatedUser = userService.authenticateUser(
-                    loginRequest.getUsername(), loginRequest.getPassword()
-            );
+                    loginRequest.getUsername(), loginRequest.getPassword());
             return ResponseEntity.ok(authenticatedUser);
         } catch (InvalidCredentialsException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         // Clear SecurityContext
@@ -224,7 +201,7 @@ public class UserController {
     public ResponseEntity<?> getUserDetails(@PathVariable java.lang.String username) {
         try {
             User user = userService.getUserByUsername(username);
-            //System.out.println(user);
+            // System.out.println(user);
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.status(404).body("User not found.");
@@ -239,8 +216,8 @@ public class UserController {
 
     @PutMapping("/{username}")
     public ResponseEntity<?> updateUserByUsername(@RequestBody User user, @PathVariable java.lang.String username) {
-        User user1=userService.updateUser(user, username);
-        if(user1==null) {
+        User user1 = userService.updateUser(user, username);
+        if (user1 == null) {
             return ResponseEntity.badRequest().body("User not found.");
         }
         return ResponseEntity.ok(user1);
@@ -250,17 +227,16 @@ public class UserController {
     @ResponseBody
     public String createOrder(@RequestBody Map<String, String> data) throws RazorpayException {
 
-        System.out.println( "Order created successfully");
+        System.out.println("Order created successfully");
 
         int amt = Integer.parseInt(data.get("amount").toString());
-        var client = new RazorpayClient(key_id,key_secret);
-        //RazorpayClient("Key_id","key_secret");
+        var client = new RazorpayClient(key_id, key_secret);
+        // RazorpayClient("Key_id","key_secret");
 
         JSONObject ob = new JSONObject();
-        ob.put("amount", amt*100);
+        ob.put("amount", amt * 100);
         ob.put("currency", "INR");
         ob.put("receipt", "order_RC_123456789");
-
 
         // Creating order
         Order order = client.orders.create(ob);
@@ -268,13 +244,13 @@ public class UserController {
 
         // save this order into database...
         PaymentOrder paymentOrder = new PaymentOrder();
-        paymentOrder.setAmount(order.get("amount")+"");
+        paymentOrder.setAmount(order.get("amount") + "");
         paymentOrder.setOrderId(order.get("id")); // correct key
         paymentOrder.setStatus("created");
         paymentOrder.setUserId(data.get("userId").toString());
 
         Optional<User> user = userRepository.findById(data.get("userId").toString());
-        if(user.isPresent()) {
+        if (user.isPresent()) {
             user.get().setStatus("created");
             userRepository.save(user.get());
         }
@@ -286,9 +262,10 @@ public class UserController {
     }
 
     @PostMapping("/update_order")
-    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data,HttpServletResponse response) throws RazorpayException {
+    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data, HttpServletResponse response)
+            throws RazorpayException {
 
-        PaymentOrder paymentOrder =  paymentOrderRepository.findByOrderId(data.get("order_id").toString());
+        PaymentOrder paymentOrder = paymentOrderRepository.findByOrderId(data.get("order_id").toString());
         paymentOrder.setPaymentId(data.get("payment_id").toString());
         paymentOrder.setStatus(data.get("status").toString());
         Optional<User> user = userRepository.findById(data.get("userId").toString());
@@ -315,7 +292,7 @@ public class UserController {
         paymentOrderRepository.save(paymentOrder);
 
         System.out.println(data);
-        return ResponseEntity.ok(Map.of("msg","updated status successfully"));
+        return ResponseEntity.ok(Map.of("msg", "updated status successfully"));
     }
 
     @GetMapping("/get_status/{username}")
@@ -399,8 +376,8 @@ public class UserController {
     public ResponseEntity<?> getPublicKey(@PathVariable String githubUserName) {
         Optional<User> userOpt = userRepository.findByGithubUsername(githubUserName);
         if (userOpt.isPresent()) {
-            String decrypyPublickey = EncryptionUtil.decrypt(userOpt.get().getRsaPublicKey(),SECRET_KEY);
-//            System.out.println(decrypyPublickey);
+            String decrypyPublickey = EncryptionUtil.decrypt(userOpt.get().getRsaPublicKey(), SECRET_KEY);
+            // System.out.println(decrypyPublickey);
             return ResponseEntity.ok(decrypyPublickey);
         } else {
             return ResponseEntity.status(404).body("User not found");
@@ -411,6 +388,7 @@ public class UserController {
     public String getCurrentUserId() {
         return this.userService.getCurrentUserId();
     }
+
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("ping");

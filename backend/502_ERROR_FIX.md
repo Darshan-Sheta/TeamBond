@@ -194,3 +194,4 @@ Application failed to start
 
 **ખાસ કરીને `GEMINI_API_KEY` variable add કર્યું છે કે check કરો!** ⚠️
 
+

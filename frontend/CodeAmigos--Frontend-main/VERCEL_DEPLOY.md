@@ -85,3 +85,4 @@ Make sure to set these environment variables in Vercel:
 - **API calls fail**: Verify `VITE_API_BASE_URL` is set correctly
 - **Routing issues**: The `vercel.json` should handle this automatically
 
+

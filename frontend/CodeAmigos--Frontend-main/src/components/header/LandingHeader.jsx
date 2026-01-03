@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 const LandingHeader = () => {
 
   const handleGithubLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/github";
+    window.location.href = "https://teambond-kjan.onrender.com/oauth2/authorization/github";
   };
 
 
