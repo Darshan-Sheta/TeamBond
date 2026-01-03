@@ -1,3 +1,4 @@
+# Build stage
 FROM eclipse-temurin:21-jdk AS build
 LABEL maintainer="codeamigos7@gmail.com"
 WORKDIR /app
@@ -8,7 +9,10 @@ COPY mvnw.cmd .
 COPY .mvn .mvn
 COPY pom.xml .
 
-# Download dependencies
+# ✅ FIX: Give execute permission to mvnw
+RUN chmod +x mvnw
+
+# Download dependencies (cache layer)
 RUN ./mvnw dependency:go-offline -B
 
 # Copy source code
@@ -24,9 +28,6 @@ WORKDIR /app
 
 # Copy the JAR file from build stage
 COPY --from=build /app/target/CodeAmigos--Backend-0.0.1-SNAPSHOT.jar /app/CodeAmigos--Backend.jar
-
-# Note: .env file is NOT copied - environment variables are provided by Railway/Render/etc.
-# For local development with Docker, mount .env file as volume or use docker-compose
 
 # Expose port
 EXPOSE 8080

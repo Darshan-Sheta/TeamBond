@@ -1,0 +1,9 @@
+[15:34:19] Variables set
+[15:34:21] Railway URL: node.exe : Unauthorized. Please login with `railway login`
+At C:\Users\DELL\AppData\Roaming\npm\railway.ps1:24 char:5
++     & "node$exe"  "$basedir/node_modules/@railway/cli/bin/railway.js" ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unauthorized. P...`railway login`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
