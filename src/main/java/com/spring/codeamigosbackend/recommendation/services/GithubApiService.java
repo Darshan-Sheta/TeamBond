@@ -71,7 +71,7 @@ public class GithubApiService {
                 long langSize = languagesEdges.get(i).get("size").asLong();
                 topLanguages.add(new RepositoryInfo.Language(langName, langSize));
             }
-            repoInfos.add(new RepositoryInfo(name, defaultBranch, commitShas, topLanguages));
+            repoInfos.add(new RepositoryInfo(name, defaultBranch, commitShas, topLanguages, new HashMap<>()));
         }
         return repoInfos;
     }
@@ -283,22 +283,33 @@ public class GithubApiService {
     /**
      * Tool for AI Agent: Lists all repositories (lightweight) for initial scanning.
      */
+    /**
+     * "Inbuilt MCP" Agentic Tool: Lists repositories AND fetches key config files
+     * in ONE shot.
+     */
     public List<RepositoryInfo> listAllRepositories(String username, String accessToken) {
-        // Fetching up to 100 repositories per page (simplified for V1 to 100 max)
+        // Optimized GraphQL Query: Fetches Repo Metadata + File Contents
+        // (HEAD:package.json, etc.)
         String query = String.format("""
                 query {
                   user(login: "%s") {
-                    repositories(first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
+                    repositories(first: 20, orderBy: {field: PUSHED_AT, direction: DESC}) {
                       nodes {
                         name
                         description
-                        primaryLanguage {
-                            name
-                        }
                         defaultBranchRef {
                           name
                         }
-                        pushedAt
+                        # "Magic" MCP Fetching: Get file content directly if it exists
+                        packageJson: object(expression: "HEAD:package.json") {
+                          ... on Blob { text }
+                        }
+                        pomXml: object(expression: "HEAD:pom.xml") {
+                          ... on Blob { text }
+                        }
+                        requirementsTxt: object(expression: "HEAD:requirements.txt") {
+                          ... on Blob { text }
+                        }
                       }
                     }
                   }
@@ -323,13 +334,22 @@ public class GithubApiService {
                 String defaultBranch = node.has("defaultBranchRef") && !node.get("defaultBranchRef").isNull()
                         ? node.get("defaultBranchRef").get("name").asText()
                         : "main";
-                String lang = node.has("primaryLanguage") && !node.get("primaryLanguage").isNull()
-                        ? node.get("primaryLanguage").get("name").asText()
-                        : "Unknown";
 
-                // Using RepositoryInfo in a slightly generic way for the agent
-                // We only populate name and branch for the lightweight list
-                RepositoryInfo info = new RepositoryInfo(name, defaultBranch, new ArrayList<>(), new ArrayList<>());
+                // Extract Pre-fetched File Contents
+                Map<String, String> configFiles = new HashMap<>();
+                if (node.has("packageJson") && !node.get("packageJson").isNull()) {
+                    configFiles.put("package.json", node.get("packageJson").get("text").asText());
+                }
+                if (node.has("pomXml") && !node.get("pomXml").isNull()) {
+                    configFiles.put("pom.xml", node.get("pomXml").get("text").asText());
+                }
+                if (node.has("requirementsTxt") && !node.get("requirementsTxt").isNull()) {
+                    configFiles.put("requirements.txt", node.get("requirementsTxt").get("text").asText());
+                }
+
+                // Create Repo Info with "Inbuilt MCP" Data
+                RepositoryInfo info = new RepositoryInfo(name, defaultBranch, new ArrayList<>(), new ArrayList<>(),
+                        configFiles);
                 repoInfos.add(info);
             }
         }

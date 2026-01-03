@@ -53,19 +53,27 @@ public class AiAnalysisService {
             if (inspectedCount >= 10)
                 break; // Analyze top 10 most recent
 
-            // Try to fetch common config files
-            String packageJson = githubApiService.getFileContent(username, repo.getName(), "package.json", accessToken);
-            if (packageJson != null) {
-                collectedData.append(
-                        String.format("--- Repo: %s, File: package.json ---\n%s\n", repo.getName(), packageJson));
+            // "Inbuilt MCP" Logic: Use pre-fetched data directly! (Zero Latency)
+            Map<String, String> configFiles = repo.getConfigFiles();
+
+            if (configFiles != null) {
+                if (configFiles.containsKey("package.json")) {
+                    collectedData.append(
+                            String.format("--- Repo: %s, File: package.json ---\n%s\n", repo.getName(),
+                                    configFiles.get("package.json")));
+                }
+                if (configFiles.containsKey("pom.xml")) {
+                    collectedData.append(
+                            String.format("--- Repo: %s, File: pom.xml ---\n%s\n", repo.getName(),
+                                    configFiles.get("pom.xml")));
+                }
+                if (configFiles.containsKey("requirements.txt")) {
+                    collectedData.append(
+                            String.format("--- Repo: %s, File: requirements.txt ---\n%s\n", repo.getName(),
+                                    configFiles.get("requirements.txt")));
+                }
             }
 
-            String pomXml = githubApiService.getFileContent(username, repo.getName(), "pom.xml", accessToken);
-            if (pomXml != null) {
-                collectedData.append(String.format("--- Repo: %s, File: pom.xml ---\n%s\n", repo.getName(), pomXml));
-            }
-
-            // Can add more like build.gradle, requirements.txt here
             inspectedCount++;
         }
 

@@ -1,8 +1,10 @@
 package com.spring.codeamigosbackend.recommendation.dtos;
+
 // For the first api i.e get all repos is handled by this
 import lombok.*;
 
 import java.util.List;
+
 @Getter
 @Setter
 @ToString
@@ -13,6 +15,7 @@ public class RepositoryInfo {
     private String defaultBranch;
     private List<String> commitShas;
     private List<Language> topLanguages;
+    private java.util.Map<String, String> configFiles; // Stores filename -> content (e.g., "package.json" -> "{...}")
 
     @Getter
     @Setter
