@@ -26,10 +26,11 @@ WORKDIR /app
 COPY --from=build /app/target/CodeAmigos--Backend-0.0.1-SNAPSHOT.jar /app/CodeAmigos--Backend.jar
 
 # Note: .env file is NOT copied - environment variables are provided by Railway/Render/etc.
-# For local development with Docker, mount .env file as volume or use docker-compose
+# This is the production Dockerfile that works with platform-provided environment variables
 
 # Expose port
 EXPOSE 8080
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "CodeAmigos--Backend.jar"]
+

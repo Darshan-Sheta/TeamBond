@@ -1,10 +1,24 @@
 package com.spring.codeamigosbackend.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import java.io.File;
 
 public class LoadEnvConfig {
     public static void load(){
-        Dotenv dotenv = Dotenv.load();
-        dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(),entry.getValue()));
+        try {
+            // Try to load .env file if it exists (for local development)
+            File envFile = new File(".env");
+            if (envFile.exists()) {
+                Dotenv dotenv = Dotenv.load();
+                dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+                System.out.println("Loaded environment variables from .env file");
+            } else {
+                // .env file doesn't exist - environment variables are provided by platform (Railway, etc.)
+                System.out.println(".env file not found - using system environment variables");
+            }
+        } catch (Exception e) {
+            // If .env loading fails, continue with system environment variables
+            System.out.println("Could not load .env file: " + e.getMessage() + " - using system environment variables");
+        }
     }
 }
