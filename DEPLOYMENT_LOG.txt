@@ -1,0 +1,18 @@
+[15:33:08] === Deployment Started ===
+[15:33:09] Checking Railway...
+[15:33:12] Railway login required
+[15:33:13] Checking Vercel...
+[15:33:25] Vercel login required
+[15:33:26] Deploying Railway backend...
+[15:34:21] Deploying Vercel frontend...
+[15:34:30] === Deployment Complete ===
+[15:34:30] Railway: node.exe : Unauthorized. Please login with `railway login`
+At C:\Users\DELL\AppData\Roaming\npm\railway.ps1:24 char:5
++     & "node$exe"  "$basedir/node_modules/@railway/cli/bin/railway.js" ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unauthorized. P...`railway login`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+[15:34:30] Vercel: 
+[15:34:30] Check DEPLOYMENT_LOG.txt for details

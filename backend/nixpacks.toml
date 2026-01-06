@@ -1,0 +1,10 @@
+[phases.setup]
+nixPkgs = ["{ maven, jdk21 }"]
+
+[phases.install]
+cmds = ["mvn clean package -DskipTests"]
+
+[start]
+cmd = "java -jar target/CodeAmigos--Backend-0.0.1-SNAPSHOT.jar"
+
+
